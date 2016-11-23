@@ -27,11 +27,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.net.ssl.SSLContext;
@@ -75,10 +78,80 @@ public class Client {
         new Client().start();
     }
 
+    private void loadProperties() {
+        Properties props = new Properties();
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("fcm-client.properties");
+            props.load(fis);
+        } catch (Exception e) {
+            // ignore
+
+        } finally {
+            String host = props.getProperty("client.host");
+            if (host != null && !host.isEmpty()) hostTextField.setText(host);
+            else hostTextField.setText("fcm-xmpp.googleapis.com");
+
+            String port = props.getProperty("client.port");
+            if (port != null && !port.isEmpty()) portTextField.setText(port);
+            else portTextField.setText("5236");
+
+            String user = props.getProperty("client.user");
+            if (user != null && !user.isEmpty()) userTextField.setText(user);
+
+            String key = props.getProperty("client.key");
+            if (key != null && !key.isEmpty()) keyTextField.setText(key);
+
+            String message = props.getProperty("client.message");
+            if (message != null && !message.isEmpty()) messageTextArea.setText(message);
+            else messageTextArea.setText("<message id=\"" + UUID.randomUUID().toString() + "\"><gcm xmlns=\"google:mobile:data\">{\n" + 
+                                         "\"to\":\"device-registration-id\",\n" + 
+                                         "\"notification\":{\"title\":\"Portugal vs. Denmark\",\"body\":\"5 to 1\"},\n" + 
+                                         "\"message_id\":\"" + UUID.randomUUID().toString() + "\",\n" + 
+                                         "\"time_to_live\":600\n" + 
+                                         "}</gcm></message>");
+
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    private void saveProperties() {
+        FileOutputStream fos = null;
+        final Properties props = new Properties();
+        try {
+            props.setProperty("client.host", hostTextField.getText());
+            props.setProperty("client.port", portTextField.getText());
+            props.setProperty("client.user", userTextField.getText());
+            props.setProperty("client.key", keyTextField.getText());
+            props.setProperty("client.message", messageTextArea.getText());
+
+            fos = new FileOutputStream("fcm-client.properties");
+            props.store(fos, null);
+        } catch (Exception e) {
+            // ignore
+
+        } finally {
+
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
     public void start() {
 
         SwingUtilities.invokeLater(new Runnable() {
-            
+
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -110,6 +183,8 @@ public class Client {
 
                     @Override
                     public void windowClosing(WindowEvent arg0) {
+                        Client.this.saveProperties();
+
                         if (socket != null && socket.isConnected() && !socket.isClosed()) {
                             try {
                                 socket.close();
@@ -148,14 +223,12 @@ public class Client {
                 JLabel hostLabel = new JLabel("HOST");
                 hostTextField = new JTextField();
                 hostTextField.setPreferredSize(new Dimension(192, 24));
-                hostTextField.setText("fcm-xmpp.googleapis.com");
                 hostAndPortPanel.add(hostLabel);
                 hostAndPortPanel.add(hostTextField);
 
                 JLabel portLabel = new JLabel("PORT");
                 portTextField = new JTextField();
                 portTextField.setPreferredSize(new Dimension(64, 24));
-                portTextField.setText("5236");
                 hostAndPortPanel.add(portLabel);
                 hostAndPortPanel.add(portTextField);
 
@@ -224,12 +297,6 @@ public class Client {
                 outgoingPanel.add(outgoingLabel, BorderLayout.NORTH);
 
                 messageTextArea = new JTextArea();
-                messageTextArea.setText("<message id=\"" + UUID.randomUUID().toString() + "\"><gcm xmlns=\"google:mobile:data\">{\n" + 
-                                        "\"to\":\"device-registration-id\",\n" + 
-                                        "\"notification\":{\"title\":\"Portugal vs. Denmark\",\"body\":\"5 to 1\"},\n" + 
-                                        "\"message_id\":\"" + UUID.randomUUID().toString() + "\",\n" + 
-                                        "\"time_to_live\":600\n" + 
-                                        "}</gcm></message>");
                 messageTextArea.setEditable(false);
                 messageTextArea.setBackground(new Color(211, 211, 211));
                 messageTextArea.setLineWrap(true);
@@ -403,6 +470,9 @@ public class Client {
 
                 connect.addActionListener(actionListener);
                 send.addActionListener(actionListener);
+
+                // load properties
+                Client.this.loadProperties();
 
                 frame.pack();
                 frame.setVisible(true);
