@@ -30,6 +30,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <plugin.version.maven-jar-plugin>3.0.2</plugin.version.maven-jar-plugin>
+        <plugin.version.exec-maven-plugin>1.2.1</plugin.version.exec-maven-plugin>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -41,7 +42,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>${plugin.version.exec-maven-plugin}</version>
                 <configuration>
                     <mainClass>org.github.allancth.fcm.client.Client</mainClass>
                 </configuration>
