@@ -45,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import com.sun.glass.events.KeyEvent;
 
@@ -75,9 +76,16 @@ public class Client {
     }
 
     public void start() {
+
         SwingUtilities.invokeLater(new Runnable() {
             
             public void run() {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (Exception e) {
+                    // ignore
+                }
+
                 JFrame frame = new JFrame("FCM Client");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setResizable(true);
