@@ -1,5 +1,5 @@
 # fcm-client
-fcm-client is a Java Swing client that 
+fcm-client is a Java Swing client that can be used to connect to an XMPP server.
 
 ## Pre-requisites
 1. [Apache Maven](http://maven.apache.org/)
